@@ -37,19 +37,19 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   // const ownershipResult = await ownershipTransaction.wait();
 
   // ToDo: Verify your contract with Etherscan for public chains
-  if (chainId !== "31337") {
-    try {
-      console.log(" 🎫 Verifing Contract on Etherscan... ");
-      await sleep(5000); // wait 5 seconds for deployment to propagate
-      await run("verify:verify", {
-        address: vendor.address,
-        contract: "contracts/BCTVendor.sol:BCTVendor",
-        constructorArguments: ["0x2f800db0fdb5223b3c3f354886d907a671414a7f"],
-      });
-    } catch (error) {
-      console.log("⚠️ Contract Verification Failed: ", error);
-    }
-  }
+  // if (chainId !== "31337") {
+  //   try {
+  //     console.log(" 🎫 Verifing Contract on Etherscan... ");
+  //     await sleep(5000); // wait 5 seconds for deployment to propagate
+  //     await run("verify:verify", {
+  //       address: vendor.address,
+  //       contract: "contracts/BCTVendor.sol:BCTVendor",
+  //       constructorArguments: ["0x2f800db0fdb5223b3c3f354886d907a671414a7f"],
+  //     });
+  //   } catch (error) {
+  //     console.log("⚠️ Contract Verification Failed: ", error);
+  //   }
+  // }
 };
 
 function sleep(ms) {

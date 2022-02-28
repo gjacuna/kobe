@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 const APIURL = 'https://api.thegraph.com/subgraphs/name/treejer/treejer-subgraph';
 const TREEJER_BASE_URL = 'https://api.treejer.com/trees/';
 
-export default function TreejerGraph(props) {
+export default function Trees(props) {
   const tokensQuery = `
     {
       trees(first: 100, skip: 0, where:{ owner: "${props.address.toLowerCase()}" }, orderBy: "createdAt", orderDirection: "asc")
@@ -30,8 +30,6 @@ export default function TreejerGraph(props) {
           query: gql(tokensQuery),
         })
         .then((data) => {
-          //console.log(data);
-          // const response = 
           data.data.trees.forEach(async (tree) => {
             const tree_id = parseInt(tree.id,16);
             try{
@@ -43,9 +41,6 @@ export default function TreejerGraph(props) {
               console.log("Error loading Treejer json. "+e);
             }
           });
-          // console.log("response ");
-          // console.log(response);
-          // setTreejerCollection(response);
         })
         .catch((err) => {
           console.log('Error fetching data: ', err)
@@ -76,9 +71,11 @@ export default function TreejerGraph(props) {
                 }
               >
                 <div>
-                  <img src={item.image} style={{ maxWidth: 150 }} />
+                  <a href={item.external_url} target="_blank">
+                    <img src={item.image} style={{ maxWidth: 150 }} />
+                  </a>
                 </div>
-                {/* <div>{item.description}</div> */}
+                <div>{item.description ? item.description : name}</div>
               </Card>
             </List.Item>
           );

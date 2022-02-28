@@ -58,20 +58,20 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   // todo: verification with etherscan
   // Verification
-  if (chainId !== "31337") {
-    try {
-      console.log(" 🎫 Verifing Contract on Etherscan... ");
-      await sleep(5000); // wait 5 seconds for deployment to propagate
-      await run("verify:verify", {
-        address: cO2TokenContract.address,
-        contract:
-          "contracts/CO2TokenContract.sol:CO2TokenContract",
-          constructorArguments: [koywePledgeContract.address, 0, "CO2e Tons", "TCO2e"],
-      });
-    } catch (error) {
-      console.log("⚠️ Contract Verification Failed: ", error);
-    }
-  }
+  // if (chainId !== "31337") {
+  //   try {
+  //     console.log(" 🎫 Verifing Contract on Etherscan... ");
+  //     await sleep(5000); // wait 5 seconds for deployment to propagate
+  //     await run("verify:verify", {
+  //       address: cO2TokenContract.address,
+  //       contract:
+  //         "contracts/CO2TokenContract.sol:CO2TokenContract",
+  //         constructorArguments: [koywePledgeContract.address, 0, "CO2e Tons", "TCO2e"],
+  //     });
+  //   } catch (error) {
+  //     console.log("⚠️ Contract Verification Failed: ", error);
+  //   }
+  // }
 };
 
 function sleep(ms) {

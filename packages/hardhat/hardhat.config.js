@@ -167,14 +167,16 @@ module.exports = {
       },
     },
     polygon: {
-      url: "https://polygon-mainnet.g.alchemy.com/v2/"+process.env.ALCHEMY_PROD, // <---- YOUR MORALIS ID! (not limited to infura)
+      // url: "https://polygon-mainnet.g.alchemy.com/v2/"+process.env.ALCHEMY_PROD, // <---- YOUR MORALIS ID! (not limited to infura)
+      url: "https://polygon-rpc.com/",
       gasPrice: 8000000000,
       accounts: {
         mnemonic: mnemonic(),
       },
     },
     mumbai: {
-      url: "https://polygon-mumbai.g.alchemy.com/v2/"+process.env.ALCHEMY_TEST, // <---- YOUR MORALIS ID! (not limited to infura)
+      // url: "https://polygon-mumbai.g.alchemy.com/v2/"+process.env.ALCHEMY_TEST, // <---- YOUR MORALIS ID! (not limited to infura)
+      url: "https://rpc-mumbai.maticvigil.com",
       gasPrice: 8000000000,
       accounts: {
         mnemonic: mnemonic(),
@@ -326,7 +328,7 @@ module.exports = {
     },
   },
   etherscan: {
-    apiKey: defaultNetwork == "polygon" ? process.env.POLYGONSCAN_KEY : process.env.ETHERSCAN_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW",
+    apiKey: defaultNetwork == "polygon" || defaultNetwork == "mumbai" ? process.env.POLYGONSCAN_KEY : process.env.ETHERSCAN_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW",
   },
 };
 

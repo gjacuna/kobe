@@ -32,7 +32,9 @@ import {
   FaucetHint,
   NetworkSwitch,
   TokenBalance,
-  TreejerGraph,
+  TreejerTrees,
+  KoyweTrees,
+  KoyweTreeMint,
   GreenTokenTable,
   PositionChart,
   BCTVendor
@@ -178,7 +180,7 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
 
   // If you want to call a function on a new block
   useOnBlock(mainnetProvider, () => {
-    console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
+    if (DEBUG) console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
   });
 
   // Then read your DAI balance like:
@@ -196,6 +198,10 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
   ], HOOK_OPTIONS);
 
   const myPolyNCTBalance = useContractReader(polyContracts, "NCT", "balanceOf", [
+    address,
+  ], HOOK_OPTIONS);
+
+  const myPolyKlimaBalance = useContractReader(polyContracts, "KLIMA", "balanceOf", [
     address,
   ], HOOK_OPTIONS);
 
@@ -219,18 +225,18 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
 
   // ** keep track of a variable from the contract in the local React state:
   const pledged = useContractReader(readContracts, "KoywePledge", "isPledged", [address], HOOK_OPTIONS);
-  console.log("💸 pledged:", pledged);
+  if (DEBUG) console.log("💸 pledged:", pledged);
 
   // ** keep track of a variable from the contract in the local React state:
   const tonsPledged = useContractReader(readContracts, "KoywePledge", "getCommitment", [address], HOOK_OPTIONS)/(10**9);
-  console.log("💸 tons pledged:", tonsPledged ? tonsPledged.toString() : "...");
+  if (DEBUG) console.log("💸 tons pledged:", tonsPledged ? tonsPledged.toString() : "...");
 
   // ** 📟 Listen for broadcast events
   const pledgeEvents = useEventListener(readContracts, "KoywePledge", "NewPledge", localProvider, 1, HOOK_OPTIONS);
-  console.log("📟 pledge events:", pledgeEvents);
+  if (DEBUG) console.log("📟 pledge events:", pledgeEvents);
 
   const CO2TokenBalance = useContractReader(readContracts, "CO2TokenContract", "balanceOf", [address], HOOK_OPTIONS);
-  console.log("🏵 CO2TokenBalance:", CO2TokenBalance ? ethers.utils.formatEther(CO2TokenBalance) : "...");
+  if (DEBUG) console.log("🏵 CO2TokenBalance:", CO2TokenBalance ? ethers.utils.formatEther(CO2TokenBalance) : "...");
 
   
 
@@ -348,6 +354,26 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
     getData();
   }, []);
 
+  const [totalBalance, setTotalBalance] = useState(0);  
+  // read prices from coingecko
+  useEffect(() => {
+    // we will use async/await to fetch this data
+    function getTotalBalance() {
+      var sum = 0;
+      sum+=(myPolyBCTBalance && myPolyBCTBalance > 0 ? myPolyBCTBalance : 0)/(Math.pow(10,18))*(prices && prices["toucan-protocol-base-carbon-tonne"] && prices["toucan-protocol-base-carbon-tonne"].usd);
+      sum+=(myPolyMCO2Balance && myPolyMCO2Balance > 0 ? myPolyMCO2Balance : 0)/(Math.pow(10,18))*(prices && prices["moss-carbon-credit"] && prices["moss-carbon-credit"].usd);
+      sum+=(myPolyKlimaBalance && myPolyKlimaBalance > 0 ? myPolyKlimaBalance : 0)/(Math.pow(10,9))*(prices && prices["staked-klima"] && prices["staked-klima"].usd);
+      sum+=(myPolySKlimaBalance && myPolySKlimaBalance > 0 ? myPolySKlimaBalance : 0)/(Math.pow(10,9))*(prices && prices["klima-dao"] && prices["klima-dao"].usd);
+      //sum+=(myPolyMCO2Balance && myPolyMCO2Balance > 0 ? myPolyMCO2Balance : 0)/(Math.pow(10,18))*(prices && prices["moss-carbon-credit"] && prices["moss-carbon-credit"].usd);
+      setTotalBalance(sum.toFixed(2)) ;
+    }
+    getTotalBalance();
+  }, [myPolyBCTBalance,myPolyMCO2Balance]);
+
+  // keep track of a variable from the contract in the local React state:
+  const koyweTreeBalance = useContractReader(readContracts, "KoyweCollectibles", "balanceOf", [address]);
+  const yourKTBalance = koyweTreeBalance && koyweTreeBalance.toNumber && koyweTreeBalance.toNumber();
+
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -405,18 +431,18 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
 
     provider.on("chainChanged", chainId => {
-      console.log(`chain changed to ${chainId}! updating providers`);
+      if (DEBUG) console.log(`chain changed to ${chainId}! updating providers`);
       setInjectedProvider(new ethers.providers.Web3Provider(provider));
     });
 
     provider.on("accountsChanged", () => {
-      console.log(`account changed!`);
+      if (DEBUG) console.log(`account changed!`);
       setInjectedProvider(new ethers.providers.Web3Provider(provider));
     });
 
     // Subscribe to session disconnection
     provider.on("disconnect", (code, reason) => {
-      console.log(code, reason);
+      if (DEBUG) console.log(code, reason);
       logoutOfWeb3Modal();
     });
     // eslint-disable-next-line
@@ -464,9 +490,9 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
             <Space>
               
               <Card title="Your Fight" style={{ width: 400, textAlign: "left" }}>
-                <p>🌳 0 trees planted</p>
+                <p>🌳 {yourKTBalance ? yourKTBalance : 0} trees planted</p>
                 <p>💨 {((myPolyBCTBalance && myPolyBCTBalance > 0 ? myPolyBCTBalance : 0)/Math.pow(10,18) + (myPolyNCTBalance && myPolyNCTBalance > 0 ? myPolyNCTBalance : 0)/Math.pow(10,18) + (myPolyMCO2Balance && myPolyMCO2Balance > 0 ? myPolyMCO2Balance : 0)/Math.pow(10,18)).toFixed(2)} CO2e tons secuestered</p>
-                <h2>🤑 {((myPolyBCTBalance && myPolyBCTBalance > 0 ? myPolyBCTBalance : 0)/(Math.pow(10,18))*(prices && prices["toucan-protocol-base-carbon-tonne"] && prices["toucan-protocol-base-carbon-tonne"].usd) + (myPolyMCO2Balance && myPolyMCO2Balance > 0 ? myPolyMCO2Balance : 0)/(Math.pow(10,18))*(prices && prices["moss-carbon-credit"] && prices["moss-carbon-credit"].usd)  ).toFixed(2)} USD invested</h2>
+                <h2>🤑 {totalBalance} USD invested</h2>
               </Card>
               <Card title="Your Plight" style={{ width: 400, textAlign: "right" }}>
                 <p>🏭 {address && <CarbonFYI currentAddress = {address} />} CO2e tons in <a href="https://carbon.fyi/" target="_blank">transactions</a></p>
@@ -475,9 +501,9 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
               </Card>
             </Space>
             <PositionChart CO2TokenBalance={CO2TokenBalance} balances={[myPolyBCTBalance,myPolyMCO2Balance,myPolyNCTBalance]} tonsPledged={tonsPledged}/>
-            <h2>Your Regenerative Art</h2>
-            {address ? <TreejerGraph address={address} /> : "Loading"}
-            <h2>Your ReFi Positions</h2>
+            <Link to="/rart" ><h2>Your Regenerative Art</h2></Link>
+            {address ? <KoyweTrees address={address} yourKTBalance={yourKTBalance} readContracts={readContracts} /> : "Loading"}
+            <Link to="/refi" ><h2>Your ReFi Positions</h2></Link>
             {address ? <GreenTokenTable address={address} prices={prices} readContracts={polyContracts} localContracts={readContracts} /> : "Loading"}
             <Link to="/refi" >
               <Button size={"large"} >
@@ -518,14 +544,23 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
           </div>
         </Route>
         <Route exact path="/rart">
-          <div style={{ width: 500, margin: "auto"}}>
+          <div style={{ width: 700, margin: "auto"}}>
             <h1 style={{ padding: 8, marginTop: 32 }}>Regenerative Art Collections</h1>
             <p>Check out your collection or add more items to help fight climate change.</p>
             <p>Some cool things you can fund: planting trees, direct capture CO2 from the air, help local communities, and more!</p>
-            <p>For now, you can only view your Treejer collection. <a href="https://treejer.com/" target="_blank">You cant mint trees here↗️</a></p>
+            <h2>NOW MINTING, KOYWE TREES!</h2>
+            <p>To celebrate our incoming full launch (BETA), we're issuing 255 digital trees! Payable with CARBON TOKENS (BCT)!</p>
+            <p><small>If you don't have BCT yet, check our ReFi tab, or go to Sushiswap Polygon, or wait for us to have a credit card ramp!</small></p>
+            <p>These trees will live on the Polygon blockchain forever as algorithmically-generated unique SVGs. All proceeds will either go to plant trees or to retire the BCT used to pay for them.</p>
+            <p>Upon minting, you will receive a tree similar to the first ever Koywe logo and 1 of 5 possible outcomes for the BCT. Watch out for the ultra rare Chile Centro Sur planting of trees.</p>
+            <p><small>Planting of trees will be done through <a href="https://www.reforestemos.org/" target="_blank">Reforestemos</a> and BCT retiring using <a href="https://toucan.earth/" target="_blank">Toucan Protocol tools</a>.</small></p>
+            <KoyweTreeMint address={address} readContracts={readContracts} writeContracts={writeContracts} tx={tx} loadWeb3Modal={loadWeb3Modal} />
           </div>
+          <h2 style={{ padding: 8, marginTop: 32 }}>Koywe Trees</h2>
+          {address ? <KoyweTrees address={address} yourKTBalance={yourKTBalance} readContracts={readContracts} /> : ""}
           <h2 style={{ padding: 8, marginTop: 32 }}>Treejer Trees</h2>
-          {address ? <TreejerGraph address={address} /> : ""}
+          <p>Also, check out your Treejer collection. <a href="https://treejer.com/" target="_blank">You cant mint (more) trees here↗️</a></p>
+          {address ? <TreejerTrees address={address} /> : ""}
           {/* <TreejerGraph address={address} /> */}
         </Route>
         <Route exact path="/pledge">
@@ -660,6 +695,15 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
           /> */}
+          <Contract
+            name="KoyweCollectibles"
+            price={price}
+            signer={userSigner}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+          />
         </Route>
       </Switch>
 
