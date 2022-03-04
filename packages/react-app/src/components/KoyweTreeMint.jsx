@@ -14,19 +14,15 @@ const { ethers } = require("ethers");
 export default function KoyweTreeMint({address, readContracts, writeContracts, tx, loadWeb3Modal}) {
 
   const treeAddress = readContracts && readContracts.KoyweCollectibles && readContracts.KoyweCollectibles.address;
-  console.log("treeAddress",treeAddress);
 
   const mintPrice = useContractReader(readContracts, "KoyweCollectibles", "bctPrice", HOOK_OPTIONS);
   const isOpen = useContractReader(readContracts, "KoyweCollectibles", "mintOpen", HOOK_OPTIONS);
-
-  console.log("mintPrice",mintPrice);
 
   const [isBCTAmountApproved, setIsBCTAmountApproved] = useState();
 
   const vendorApproval = useContractReader(readContracts, "PBCT", "allowance", [
     address, treeAddress
   ], HOOK_OPTIONS);
-  console.log("vendorApproval",vendorApproval);
 
   useEffect(()=>{
     setIsBCTAmountApproved(vendorApproval && mintPrice && vendorApproval.gte(mintPrice))

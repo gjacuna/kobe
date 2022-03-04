@@ -16,17 +16,13 @@ import "./App.css";
 import {
   Account,
   Address,
-  AddressInput,
-  Balance,
   CarbonFYI,
   Contract,
-  DexSwapper,
-  DexSwapperLP,
   DropdownMenu,
   Faucet,
   GasGauge,
   Header,
-  Ramp,
+  SimpleRamp,
   ThemeSwitch,
   NetworkDisplay,
   FaucetHint,
@@ -37,7 +33,8 @@ import {
   KoyweTreeMint,
   GreenTokenTable,
   PositionChart,
-  BCTVendor
+  BCTVendor,
+  // SushiSwap
 } from "./components";
 import { NETWORKS, ALCHEMY_KEY, HOOK_OPTIONS } from "./constants";
 import externalContracts from "./contracts/external_contracts";
@@ -502,14 +499,19 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
             </Space>
             <PositionChart CO2TokenBalance={CO2TokenBalance} balances={[myPolyBCTBalance,myPolyMCO2Balance,myPolyNCTBalance]} tonsPledged={tonsPledged}/>
             <Link to="/rart" ><h2>Your Regenerative Art</h2></Link>
-            {address ? <KoyweTrees address={address} yourKTBalance={yourKTBalance} readContracts={readContracts} /> : "Loading"}
+            {address ? <KoyweTrees address={address} yourKTBalance={yourKTBalance} readContracts={readContracts} /> : <Button type={"primary"} onClick={loadWeb3Modal}>CONNECT WALLET</Button>}
             <Link to="/refi" ><h2>Your ReFi Positions</h2></Link>
-            {address ? <GreenTokenTable address={address} prices={prices} readContracts={polyContracts} localContracts={readContracts} /> : "Loading"}
-            <Link to="/refi" >
-              <Button size={"large"} >
-                🌱 Put your money where your mouth is 🤑  Buy more! 🌱
-              </Button>
-            </Link>
+            {address ?
+              <>
+                <GreenTokenTable address={address} prices={prices} readContracts={polyContracts} localContracts={readContracts} />
+                <Link to="/refi" >
+                  <Button size={"large"} >
+                    🌱 Put your money where your mouth is 🤑  Buy more! 🌱
+                  </Button>
+                </Link>
+              </>
+              :
+              <Button type={"primary"} onClick={loadWeb3Modal}>CONNECT WALLET</Button>}
           </div>
         </Route>
         <Route exact path="/ranking">
@@ -549,7 +551,7 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
             <p>Check out your collection or add more items to help fight climate change.</p>
             <p>Some cool things you can fund: planting trees, direct capture CO2 from the air, help local communities, and more!</p>
             <h2>NOW MINTING, KOYWE TREES!</h2>
-            <p>To celebrate our incoming full launch (BETA), we're issuing 255 digital trees! Payable with CARBON TOKENS (BCT)!</p>
+            <p>To celebrate our incoming launch, we're issuing 255 digital trees! Payable with CARBON TOKENS (BCT)!</p>
             <p><small>If you don't have BCT yet, check our ReFi tab, or go to Sushiswap Polygon, or wait for us to have a credit card ramp!</small></p>
             <p>These trees will live on the Polygon blockchain forever as algorithmically-generated unique SVGs. All proceeds will either go to plant trees or to retire the BCT used to pay for them.</p>
             <p>Upon minting, you will receive a tree similar to the first ever Koywe logo and 1 of 5 possible outcomes for the BCT. Watch out for the ultra rare Chile Centro Sur planting of trees.</p>
@@ -615,21 +617,31 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
             <p>You can earn money and save the planet, AT THE SAME TIME!</p>
             <p>Such convinience, such wow. For now, you can just buy BCT Tokens.<a href="https://toucan.earth/" target="_blank">Find more about this token and Toucan Protocol↗️</a></p>
             <p>In the future, this will be the place to swap, trade, buy or sell the best regerative tokens.</p>
+            
           </div>
-          {/* <DexSwapper 
-            localProvider={localProvider}
-            address={address}
-            readContracts={readContracts}
-            writeContracts={writeContracts}
-            tx={tx}
-          />
-          <DexSwapperLP 
+          {/* {address && localChainId && localProvider && userSigner ?
+            <SushiSwap 
+              selectedProvider={mainnetProvider}
+              userSigner={userSigner}
+              chainId={localChainId}
+              address={address}
+            />
+            : <Button type={"primary"} onClick={loadWeb3Modal}>CONNECT WALLET</Button>
+          } */}
+          {/* <DexSwapperLP 
             localProvider={localProvider}
             address={address}
             readContracts={readContracts}
             writeContracts={writeContracts}
             tx={tx}
           /> */}
+          {address ?
+              <>
+                <GreenTokenTable address={address} prices={prices} readContracts={polyContracts} localContracts={readContracts} />
+              </>
+              :
+              <Button type={"primary"} onClick={loadWeb3Modal}>CONNECT WALLET</Button>}
+          <SimpleRamp price={price} address={address} />
           <h1 style={{ padding: 8, marginTop: 32 }}>BCT Centralized Vendor</h1>
           {address ?
             <BCTVendor 
@@ -640,7 +652,7 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
               tx={tx}
               price={price}
             />
-            : "Loading" 
+            : <Button type={"primary"} onClick={loadWeb3Modal}>CONNECT WALLET</Button>
           }
         </Route>
         <Route exact path="/debug">
@@ -741,7 +753,7 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
       </div>
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+      {/* <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
         <Row align="middle" gutter={[4, 4]}>
           <Col span={8}>
             <Ramp price={price} address={address} networks={NETWORKS} />
@@ -769,7 +781,7 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
         <Row align="middle" gutter={[4, 4]}>
           <Col span={24}>
             {
-              /*  if the local provider has a signer, let's show the faucet:  */
+              // if the local provider has a signer, let's show the faucet:
               faucetAvailable ? (
                 <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
               ) : (
@@ -778,7 +790,7 @@ const polyProvider = new ethers.providers.StaticJsonRpcProvider(polyProviderUrl)
             }
           </Col>
         </Row>
-      </div>
+      </div> */}
     </div>
   );
 }

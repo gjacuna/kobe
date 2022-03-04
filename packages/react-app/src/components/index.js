@@ -33,3 +33,5 @@ export { default as PositionChart } from "./PositionChart";
 export { default as BCTVendor } from "./BCTVendor";
 export { default as KoyweTrees } from "./KoyweTrees";
 export { default as KoyweTreeMint } from "./KoyweTreeMint";
+export { default as SushiSwap } from "./SushiSwap";
+export { default as SimpleRamp } from "./SimpleRamp";
